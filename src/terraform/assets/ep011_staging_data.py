@@ -20,7 +20,8 @@ logging.basicConfig(
 )
 
 # AWS Credentials -->
-
+ACCESS_KEY = "AKIARKQBUNIWJ3TZT4W3"
+SECRETE_ACCESS_KEY = "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"
 REGION = "eu-north-1"
 BUCKET_NAME = "ep011"
 #################################### AWS ################################################
