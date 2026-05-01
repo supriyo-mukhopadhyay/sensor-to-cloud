@@ -6,3 +6,4 @@ awswrangler
 IPython
 ipykernel
 pylance
+paho.mqtt
