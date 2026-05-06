@@ -1,0 +1,6 @@
+project = "ep011"
+region = "eu-north-1"
+vpc_id = "vpc-0796aa44a733f132e"
+public_subnet_a_id = "subnet-0a87a8eebca7d57bc"
+raw_bucket_name = "ep011-808429836131-eu-north-1-staging-bucket"
+glue_scripts_name = "ep011-808429836131-eu-north-1-staging-scripts"

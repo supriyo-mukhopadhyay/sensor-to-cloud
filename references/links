@@ -1,0 +1,20 @@
+study link to follow:
+https://www.dataquest.io/blog/setting-up-apache-airflow-with-docker-locally-part-i/
+
+airflow docket yaml from airflow official website: 
+curl -LfO 'https://airflow.apache.org/docs/apache-airflow/3.0.1/docker-compose.yaml'
+
+create .env file 
+echo -e "AIRFLOW_UID=\$(id -u)" > .env
+
+setup docker maradata database:
+docker compose up airflow-init
+
+launch docker environment:
+docker compose up -d
+
+http://localhost:8080/
+
+shutdown docker env:
+docker compose down -v
+

@@ -1,0 +1,9 @@
+boto3
+pandas
+smart_open
+pyspark
+awswrangler
+IPython
+ipykernel
+pylance
+paho.mqtt
