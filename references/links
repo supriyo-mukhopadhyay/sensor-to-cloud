@@ -18,3 +18,5 @@ http://localhost:8080/
 shutdown docker env:
 docker compose down -v
 
+https://medium.com/better-programming/apache-airflow-on-docker-with-aws-s3-3abaf6874a49
+

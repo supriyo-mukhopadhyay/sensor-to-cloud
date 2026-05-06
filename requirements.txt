@@ -8,3 +8,4 @@ ipykernel
 pylance
 paho.mqtt
 dotenv
+apache-airflow==3.2.1
