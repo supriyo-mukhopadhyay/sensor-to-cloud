@@ -27,8 +27,7 @@ t_form = transform()
 
 ################################# AWS ###################################################
 # AWS Credentials -->
-ACCESS_KEY = "AKIA3YORMK5R7FV4XE43"
-SECRETE_ACCESS_KEY = "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"
+
 REGION = "eu-west-1"
 
 # Create AWS session with credentials. using boto3 lib
