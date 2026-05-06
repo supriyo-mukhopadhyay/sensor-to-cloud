@@ -8,6 +8,8 @@ import boto3
 import time
 import datetime
 from botocore.exceptions import ClientError
+from dotenv import load_dotenv
+import os
 
 ################################# Logging ###############################################
 # All application logs are saved in producer.log file in project directory
@@ -20,9 +22,12 @@ logging.basicConfig(
         logging.StreamHandler(sys.stdout),
     ],
 )
+
+load_dotenv()
+
 # AWS Credentials -->
-ACCESS_KEY = "AKIA3YORMK5R7FV4XE43"
-SECRETE_ACCESS_KEY = "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"
+ACCESS_KEY = os.getenv("ACCESS_KEY")
+SECRETE_ACCESS_KEY = os.getenv("SECRETE_ACCESS_KEY")
 REGION = "eu-west-1"
 BUCKET_NAME = "ep011-808429836131-eu-north-1-staging-bucket"
 

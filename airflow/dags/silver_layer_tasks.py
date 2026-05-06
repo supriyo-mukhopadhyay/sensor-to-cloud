@@ -4,6 +4,8 @@ import boto3
 import logging
 from transformation import transform
 from io import StringIO
+from dotenv import load_dotenv
+import os
 
 ################################# Logging ###############################################
 # All application logs are saved in producer.log file in project directory
@@ -26,8 +28,12 @@ SIGNED_SHORT = 17
 t_form = transform()
 
 ################################# AWS ###################################################
-# AWS Credentials -->
+load_dotenv()
 
+
+# AWS Credentials -->
+ACCESS_KEY = os.getenv("ACCESS_KEY")
+SECRETE_ACCESS_KEY = os.getenv("SECRETE_ACCESS_KEY")
 REGION = "eu-west-1"
 
 # Create AWS session with credentials. using boto3 lib
