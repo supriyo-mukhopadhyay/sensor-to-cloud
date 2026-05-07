@@ -10,7 +10,7 @@ resource "aws_glue_job" "staging_data_prep_job" {
   }
 
   default_arguments = {
-    "--additional-python-modules"         = "paho.mqtt"
+    "--additional-python-modules"         = "paho.mqtt, dotenv"
   }
 
   execution_property {

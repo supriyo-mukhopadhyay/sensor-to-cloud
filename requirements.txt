@@ -10,3 +10,4 @@ paho.mqtt
 dotenv
 apache-airflow==3.2.1
 awscli
+apache-airflow-providers-amazon
