@@ -78,7 +78,7 @@ def read_data_s3(bucket: str, key: str):
         Key=key,
     )
 
-    file = open("./test.txt", "r")
+    file = open("./temp.txt", "r")
 
     lines = file.readlines()
     datalist = []
@@ -109,12 +109,6 @@ def transfomation_script():
     print(json_data)
 
 
-default_args = {"owner": "your-name", "retries": 3, "retry_delay": timedelta(minutes=1)}
-output_dir = "/opt/airflow/tmp"
-raw_file = "raw_events.csv"
-transformed_file = "transformed_events.csv"
-raw_path = os.path.join(output_dir, raw_file)
-transformed_path = os.path.join(output_dir, transformed_file)
 starttime = __key__()
 
 
@@ -130,7 +124,6 @@ starttime = __key__()
 # DAG setup
 with DAG(
     dag_id="etl_pipeline_transform_quality_check",
-    default_args=default_args,
     description="Simulate a daily ETL flow with transformation and S3 upload",
     start_date=starttime,
     # schedule="@daily",
