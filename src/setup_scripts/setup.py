@@ -23,9 +23,10 @@ load_dotenv()
 
 # AWS Credentials -->
 ACCESS_KEY = os.getenv("ACCESS_KEY")
-SECRETE_ACCESS_KEY = os.getenv("SECRETE_ACCESS_KEY")
+SECRETE_ACCESS_KEY = os.getenv("SECRET_ACCESS_KEY")
 REGION = "eu-west-1"
 BUCKET_NAME_STAGING_DATA = "ep011-808429836131-eu-north-1-staging-bucket"
+BUCKET_NAME_PROCESSED_DATA = "ep011-808429836131-eu-north-1-processed-bucket"
 BUCKET_NAME_STAGING_SCRIPTS = "ep011-808429836131-eu-north-1-staging-scripts"
 
 # Create AWS session with credentials. using boto3 lib
@@ -47,7 +48,9 @@ s3Client = boto3.client(
 def bucketNameValidation(BucketName):
     val = 0
     try:
-        for bucket in s3Resource.buckets.all(): # pyright: ignore[reportAttributeAccessIssue]
+        for (
+            bucket
+        ) in s3Resource.buckets.all():  # pyright: ignore[reportAttributeAccessIssue]
             # s3BucketList.append(bucket.name)
             # print(bucket)
             if BucketName == bucket.name:
@@ -58,8 +61,8 @@ def bucketNameValidation(BucketName):
         return val
     except Exception as e:
         logging.error(e)
-       
-       
+
+
 def createBucket(bucketName, region=None):
     """Create an S3 bucket in a specified region
 
@@ -77,15 +80,16 @@ def createBucket(bucketName, region=None):
                 s3Client.create_bucket(
                     Bucket=BucketName, CreateBucketConfiguration=location
                 )
+                logging.info("Bucket created !!!")
         else:
             logging.info("Bucket exists !!!")
     except ClientError as e:
-        logging.error(format(sys.exc_info()[-1].tb_lineno)) # type: ignore
+        logging.error(format(sys.exc_info()[-1].tb_lineno))  # type: ignore
         logging.error(e)
         return False
-    return True 
-
+    return True
 
 
 createBucket(BUCKET_NAME_STAGING_DATA, REGION)
 createBucket(BUCKET_NAME_STAGING_SCRIPTS, REGION)
+createBucket(BUCKET_NAME_PROCESSED_DATA, REGION)
