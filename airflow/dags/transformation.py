@@ -32,7 +32,7 @@ class transform:
         raw = f"{deviceid}-{timestamp}"
         return hashlib.sha256(raw.encode()).hexdigest()
 
-    def datasource_transformation(self, dataList) -> str:
+    def datasource_transformation(self, dataList) -> dict:
         deviceidAscii = [dataList[val] for val in range(2, len(dataList) - 19)]
         deviceid = "".join(map(chr, deviceidAscii))
         json_data = {}
@@ -64,7 +64,9 @@ class transform:
                 "Time_stamp": f"{timestamp}",
                 "Event_Id": f"{self.generate_event_id(deviceid, timestamp)}",
             }
+            
             return json_data
+        
         except Exception as e:
             logging.error(
                 {
@@ -81,3 +83,4 @@ class transform:
                     "line": format(sys.exc_info()[-1].tb_lineno),
                 }
             )
+            return {}
