@@ -2,7 +2,7 @@ import pandas as pd
 import sys
 import boto3
 import logging
-
+import json
 from io import StringIO
 from dotenv import load_dotenv
 import os
@@ -60,7 +60,9 @@ def __key__() -> str:
     return starttime
 
 
-def __add_second__key__(time: str) -> str:
+def __add_second__key__() -> str:
+    time = datetime.now()
+    time = time.strftime("%Y-%m-%d %H:%M:%S")
     nexttime = datetime.timestamp(datetime.strptime(time, "%Y-%m-%d %H:%M:%S"))
     nexttime = nexttime + 1
     nexttime = str(
@@ -112,14 +114,19 @@ def transfomation_script():
 starttime = __key__()
 
 
-# # Task 3: Upload to S3
-# def upload_to_s3(**kwargs):
-#     run_date = kwargs['ds']
-#     bucket_name = 'your-bucket-name'
-#     s3_key = f'your-directory-name/events_transformed_{run_date}.csv'
-#     s3 = boto3.client('s3')
-#     s3.upload_file(transformed_path, bucket_name, s3_key)
-#     print(f"Uploaded to s3://{bucket_name}/{s3_key}")
+# Task 3: Upload to S3
+def upload_to_s3(**kwargs):
+    bucket = kwargs["bucket"]
+    key = kwargs["key"]
+    # s3_key = f"your-directory-name/events_transformed_{run_date}.csv"
+    s3 = boto3.client("s3")
+    s3.put_object(Body=json.dumps(json_data), Bucket=bucket, Key=key)
+
+
+def delete_data():
+    s3 = boto3.resource("s3")
+    s3.Object("your-bucket", "your-key").delete()
+
 
 # DAG setup
 with DAG(
@@ -127,7 +134,7 @@ with DAG(
     description="Simulate a daily ETL flow with transformation and S3 upload",
     start_date=starttime,
     # schedule="@daily",
-    schedule_interval=timedelta(minutes=1),
+    schedule_interval=timedelta(seconds=1),
     catchup=False,
 ) as dag:
 
@@ -146,5 +153,13 @@ with DAG(
         task_id="transform", python_callable=transfomation_script
     )
 
+    upload_data = PythonOperator(
+        task_id="upload",
+        python_callable=upload_to_s3,
+        kwargs={
+            "Bucket": "ep011-808429836131-eu-north-1-processed-bucket",
+            "key": f"rnd/processes/json/{__add_second__key__()}",
+        },
+    )
     end_task = EmptyOperator(task_id="end")
     start_task >> extract >> task_transform >> end_task
