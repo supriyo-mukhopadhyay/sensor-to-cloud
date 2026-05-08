@@ -74,22 +74,38 @@ REGION = "eu-west-1"
 # # print(int(datalist[0]))
 # data = tr.datasource_transformation(datalist)
 # print(data)
-s3 = boto3.client(
-    "s3"
+# s3 = boto3.client(
+#     "s3"
+# )
+
+
+# Bucket="ep011-808429836131-eu-north-1-staging-bucket",
+# Key="rnd/staging_raw/mqtt/2026-05-07 13:31:02.699288"
+
+# s3.download_file(
+#     Filename="./temp.txt",
+#     Bucket=Bucket,
+#     Key=Key,
+# )
+
+# file = open("./temp.txt", "r")
+# lines = file.readlines()
+# datalist = []
+# for line in lines:
+#     datalist.append(int(line))
+
+
+# date = datetime("2026-05-07 18:24:54")
+
+
+SERVERTIME = datetime.timestamp(
+    datetime.strptime("2026-05-07 18:24:54", "%Y-%m-%d %H:%M:%S")
+)
+print(SERVERTIME)
+
+
+starttime = datetime.strptime(
+    str(datetime.fromtimestamp(SERVERTIME)), "%Y-%m-%d %H:%M:%S"
 )
 
-
-Bucket="ep011-808429836131-eu-north-1-staging-bucket",
-Key="rnd/staging_raw/mqtt/2026-05-07 13:31:02.699288"
-
-s3.download_file(
-    Filename="./temp.txt",
-    Bucket=Bucket,
-    Key=Key,
-)
-
-file = open("./temp.txt", "r")
-lines = file.readlines()
-datalist = []
-for line in lines:
-    datalist.append(int(line))
+print(starttime)
