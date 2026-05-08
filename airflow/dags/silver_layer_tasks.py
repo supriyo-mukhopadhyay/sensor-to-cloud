@@ -45,7 +45,7 @@ try:
 except Exception as e:
     logging.error(
         {
-        "Message": f"error : {e}" ,
+            "Message": f"error : {e}",
         }
     )
 
@@ -66,9 +66,16 @@ def __key__() -> datetime:
     min = time.minute
     sec = time.second
     min = min
-    time = datetime(year=year, month=month, day = day, hour=hour, minute=min, second=sec)
+    time = datetime(year=year, month=month, day=day, hour=hour, minute=min, second=sec)
     return time
 
+
+def start_time_calculation(time: str) -> datetime:
+    SERVERTIME = datetime.timestamp(datetime.strptime(time, "%Y-%m-%d %H:%M:%S"))
+    starttime = datetime.strptime(
+        str(datetime.fromtimestamp(SERVERTIME)), "%Y-%m-%d %H:%M:%S"
+    )
+    return starttime
 
 
 def read_data_s3(bucket: str, key: str):
@@ -81,153 +88,128 @@ def read_data_s3(bucket: str, key: str):
                     "Message": "Extracting data ",
                 }
             )
-            response_file_1 = s3_hook.read_key(
-                key=key, bucket_name=bucket
-            )
-            file  = open("./dags/load.txt", "w")
+            response_file_1 = s3_hook.read_key(key=key, bucket_name=bucket)
+            file = open("./dags/load.txt", "w")
             file.write(response_file_1)
             logging.info(response_file_1)
             logging.info(
-                    {
-                        "Message": f"s3_read response{response_file_1} ",
-                    }
-                )
+                {
+                    "Message": f"s3_read response{response_file_1} ",
+                }
+            )
         else:
             logging.info(
-                    {
-                        "Message": f"s3_read: key not present ",
-                    }
-                )
+                {
+                    "Message": f"s3_read: key not present ",
+                }
+            )
     except Exception as e:
         logging.error(
             {
-            "Message": f"error extracting: {e}" ,
+                "Message": f"error extracting: {e}",
             }
         )
-
 
 
 def transfomation_script(bucket: str, key: str):
     try:
         s3_hook = S3Hook(aws_conn_id="aws_con")
-        bool = s3_hook.check_for_key(key=key, bucket_name=bucket)
-        if bool:
-            logging.info(
-                {
-                    "Message": "transforming data ",
-                }
-            )
-            datalist = []
-            file = open("./dags/load.txt", "r")
-            lines = file.readlines()
-            for line in lines:
-                datalist.append(int(line))
-            json_data = t_form.datasource_transformation(datalist)
-            logging.info(
-                    {
-                        "Message": f"transform data{json_data} ",
-                    }
-                )
-            file = open("./dags/transform.txt", "w")
-            file.write(str(json_data))
-        else:
-            logging.info(
-                    {
-                        "Message": f"transfomation_script: s3_read: key not present ",
-                    }
-                )
+        logging.info(
+            {
+                "Message": "transforming data ",
+            }
+        )
+        datalist = []
+        file = open("./dags/load.txt", "r")
+        lines = file.readlines()
+        for line in lines:
+            datalist.append(int(line))
+        json_data = t_form.datasource_transformation(datalist)
+        logging.info(
+            {
+                "Message": f"transform data{json_data} ",
+            }
+        )
+        file = open("./dags/transform.txt", "w")
+        file.write(str(json_data))
+
     except Exception as e:
         logging.error(
             {
-            "Message": f"error transforming: {e}" ,
+                "Message": f"error transforming: {e}",
             }
         )
 
 
-
-
 # Task 3: Upload to S3
-def upload_to_s3(bucket_s: str, key_s: str, bucket: str, key: str):
-    try: 
+def upload_to_s3(bucket: str, key: str):
+    try:
         # s3_key = f"your-directory-name/events_transformed_{run_date}.csv"
         s3_hook = S3Hook(aws_conn_id="aws_con")
-        bool = s3_hook.check_for_key(key=key_s, bucket_name=bucket_s)
-        if bool:
-            logging.info(
-                {
-                    "Message": "uploading data ",
-                }
-            )
-            s3_hook.load_file(
-                    filename="./dags/transform.txt",
-                    key=key,
-                    bucket_name=bucket,
-                    replace=True
-                )
-        else:
-            logging.info(
-                    {
-                        "Message": f"upload_to_s3: s3_read: key not present ",
-                    }
-                )
-            # s3.put_object(Body=json.dumps(json_data), Bucket=bucket, Key=key)
+        logging.info(
+            {
+                "Message": "uploading data ",
+            }
+        )
+        s3_hook.load_file(
+            filename="./dags/transform.txt",
+            key=key,
+            bucket_name=bucket,
+            replace=True,
+        )
+        # s3.put_object(Body=json.dumps(json_data), Bucket=bucket, Key=key)
     except Exception as e:
         logging.error(
             {
-            "Message": f"error uploading: {e}" ,
+                "Message": f"error uploading: {e}",
             }
         )
 
 
 def delete_data():
-    # s3 = boto3.client(
-    s3.Object("your-bucket", "your-key").delete()
+    s3_hook = S3Hook(aws_conn_id="aws_con")
+    # s3.Object("your-bucket", "your-key").delete()
 
-starttime = __key__()
+
+starttime = start_time_calculation("2026-05-07 18:26:20")
 # DAG setup
 with DAG(
     dag_id="etl_pipeline_transform_quality_check",
     description="Simulate a daily ETL flow with transformation and S3 upload",
     start_date=starttime,
-    schedule=timedelta(seconds=1),
+    schedule=timedelta(seconds=2),
     # schedule_interval=timedelta(seconds=1),
     catchup=False,
 ) as dag:
-    
-    starttime = __key__()
-    
+
+    # starttime = __key__()
+
     start_task = EmptyOperator(task_id="start")
 
- 
-    
     extract = PythonOperator(
         task_id="extract_data",
         python_callable=read_data_s3,
         op_kwargs={
             "bucket": "ep011-808429836131-eu-north-1-staging-bucket",
-            "key": f"rnd/staging_raw/mqtt/{starttime}",
+            "key": f"rnd/staging_raw/mqtt/{__key__()}",
         },
     )
 
-    
     task_transform = PythonOperator(
-        task_id="transform", python_callable=transfomation_script,
+        task_id="transform",
+        python_callable=transfomation_script,
         op_kwargs={
             "bucket": "ep011-808429836131-eu-north-1-staging-bucket",
-            "key": f"rnd/staging_raw/mqtt/{starttime}",
-        }
+            "key": f"rnd/staging_raw/mqtt/{__key__()}",
+        },
     )
-
-    
 
     upload_data = PythonOperator(
         task_id="upload",
         python_callable=upload_to_s3,
         op_kwargs={
-            "bucket_s": "ep011-808429836131-eu-north-1-staging-bucket",
-            "key_s": f"rnd/staging_raw/mqtt/{starttime}",
             "bucket": "ep011-808429836131-eu-north-1-processed-bucket",
-            "key": f"rnd/processes/json/{starttime}",
+            "key": f"rnd/processes/json/{__key__()}",
         },
     )
     end_task = EmptyOperator(task_id="end")
