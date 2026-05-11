@@ -41,7 +41,7 @@ json_data = ""
 load_dotenv()
 try:
     file = open("./dags/load.txt", "x")
-    file = open("./dags/transform.txt", "x")
+    file = open("./dags/transform.json", "x")
 except Exception as e:
     logging.error(
         {
@@ -130,7 +130,7 @@ def transfomation_script(bucket: str, key: str):
                 "Message": f"transform data{json_data} ",
             }
         )
-        file = open("./dags/transform.txt", "w")
+        file = open("./dags/transform.json", "w")
         file.write(str(json_data))
 
     except Exception as e:
@@ -152,7 +152,7 @@ def upload_to_s3(bucket: str, key: str):
             }
         )
         s3_hook.load_file(
-            filename="./dags/transform.txt",
+            filename="./dags/transform.json",
             key=key,
             bucket_name=bucket,
             replace=True,
