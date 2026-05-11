@@ -98,14 +98,47 @@ REGION = "eu-west-1"
 # date = datetime("2026-05-07 18:24:54")
 
 
-SERVERTIME = datetime.timestamp(
-    datetime.strptime("2026-05-07 18:24:54", "%Y-%m-%d %H:%M:%S")
+# SERVERTIME = datetime.timestamp(
+#     datetime.strptime("2026-05-07 18:24:54", "%Y-%m-%d %H:%M:%S")
+# )
+# print(SERVERTIME)
+
+
+# starttime = datetime.strptime(
+#     str(datetime.fromtimestamp(SERVERTIME)), "%Y-%m-%d %H:%M:%S"
+# )
+
+# print(starttime)
+
+
+import awswrangler as wr
+from botocore.exceptions import ClientError
+from dotenv import load_dotenv
+import os
+import boto3
+
+# AWS Credentials -->
+ACCESS_KEY = os.getenv("ACCESS_KEY")
+SECRETE_ACCESS_KEY = os.getenv("SECRET_ACCESS_KEY")
+print(ACCESS_KEY)
+REGION = "eu-west-1"
+BUCKET_NAME = "ep011-808429836131-eu-north-1-staging-bucket"
+load_dotenv()
+
+# Create AWS session with credentials. using boto3 lib
+session = boto3.Session(
+    aws_access_key_id=ACCESS_KEY,
+    aws_secret_access_key=SECRETE_ACCESS_KEY,
+    region_name=REGION,
 )
-print(SERVERTIME)
 
+databases = wr.catalog.databases(boto3_session=session)
+print(databases)
 
-starttime = datetime.strptime(
-    str(datetime.fromtimestamp(SERVERTIME)), "%Y-%m-%d %H:%M:%S"
-)
+# DATABASE_NAME = "de-c3w2lab1-aws-reviews"
 
-print(starttime)
+# if DATABASE_NAME not in databases.values.tolist():
+#     wr.catalog.create_database(DATABASE_NAME)
+#     print(wr.catalog.databases())
+# else:
+#     print(f"Database {DATABASE_NAME} already exists")

@@ -164,7 +164,7 @@ class extraction:
                                 __hexCollectFlag__ = 0
 
                         elif byteCounter == (dataList[2] - 2):
-                            dataList.append(int(x, 16)) # type: ignore
+                            dataList.append(int(x, 16))  # type: ignore
 
                 byteCounter = byteCounter + 1
             return dataList
@@ -174,7 +174,7 @@ class extraction:
                 {
                     "Message": "Failed to transform hex to decimal: ",
                     "error": str(e),
-                    "line": format(sys.exc_info()[-1].tb_lineno), # type: ignore
+                    "line": format(sys.exc_info()[-1].tb_lineno),  # type: ignore
                 }
             )
 
@@ -182,7 +182,7 @@ class extraction:
                 {
                     "Message": "Failed to transform hex to decimal: ",
                     "error": str(e),
-                    "line": format(sys.exc_info()[-1].tb_lineno), # type: ignore
+                    "line": format(sys.exc_info()[-1].tb_lineno),  # type: ignore
                 }
             )
 
@@ -194,6 +194,7 @@ class extraction:
         #         logging.error(
         #             {"Message": "Failed to send message to topic, error: ", "error": str(e)}
         #         )
+
 
 ################################# Logging ###############################################
 # All application logs are saved in producer.log file in project directory
@@ -214,7 +215,7 @@ ACCESS_KEY = os.getenv("ACCESS_KEY")
 SECRETE_ACCESS_KEY = os.getenv("SECRET_ACCESS_KEY")
 REGION = "eu-west-1"
 BUCKET_NAME = "ep011-808429836131-eu-north-1-staging-bucket"
-
+print(ACCESS_KEY)
 # Create AWS session with credentials. using boto3 lib
 session = boto3.Session(
     aws_access_key_id=ACCESS_KEY,
@@ -285,28 +286,3 @@ _mqtt_client.subscribe(topic, 2)
 _mqtt_client.on_message = on_message
 _mqtt_client.loop_forever()
 # _mqtt_client.loop_start()
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
