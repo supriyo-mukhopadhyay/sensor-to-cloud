@@ -1,0 +1,1 @@
+{"fileLocations": [{"URIs": ["uri1", "uri2", "uri3", "hello"]}], "globalUploadSettings": {"format": "JSON", "delimiter": ",", "textqualifier": "'", "containsHeader": "true"}}

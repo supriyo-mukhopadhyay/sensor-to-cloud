@@ -37,11 +37,24 @@ SIGNED_SHORT = 17
 t_form = transform()
 datalist = []
 json_data = ""
+file_urls = []
 ################################# AWS ###################################################
 load_dotenv()
+json_manifest_data = {
+    "fileLocations": [{"URIs": []}],
+    "globalUploadSettings": {
+        "format": "JSON",
+        "delimiter": ",",
+        # "textqualifier": '"',
+        "containsHeader": "true",
+    },
+}
 try:
     file = open("./dags/load.txt", "x")
     file = open("./dags/transform.json", "x")
+    file = open("./dags/manifest.json", "x")
+    with open("./dags/manifest.json", "w") as file:
+        file.write(json_manifest_data)
 except Exception as e:
     logging.error(
         {
@@ -157,6 +170,19 @@ def upload_to_s3(bucket: str, key: str):
             bucket_name=bucket,
             replace=True,
         )
+
+        file_urls.append(str(key))
+        with open("./dags/manifest.json", "r") as file:
+            data = json.load(file)
+            # file.close()
+        filelocation = data["fileLocations"]
+        file_urls = filelocation[0]
+        file_urls = file_urls["URIs"]
+        file_urls.append(key)
+        data["fileLocations"][0]["URIs"] = file_urls
+        with open("manifest.json", "w") as file:
+            file.write(json.dumps(data))
+            # file.close()
         # s3.put_object(Body=json.dumps(json_data), Bucket=bucket, Key=key)
     except Exception as e:
         logging.error(
@@ -212,5 +238,6 @@ with DAG(
             "key": f"rnd/processes/json/{__key__()}",
         },
     )
+
     end_task = EmptyOperator(task_id="end")
     start_task >> extract >> task_transform >> upload_data >> end_task
