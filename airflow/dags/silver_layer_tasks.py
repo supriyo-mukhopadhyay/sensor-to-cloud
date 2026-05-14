@@ -11,7 +11,7 @@ from airflow.models import Variable
 from airflow.providers.standard.operators.empty import EmptyOperator
 from airflow.providers.standard.operators.python import PythonOperator
 from airflow.providers.amazon.aws.hooks.s3 import S3Hook
-
+import csv
 # from airflow.utils.context import Context # type: ignore
 from datetime import datetime, timedelta, timezone
 from transformation import transform
@@ -40,35 +40,74 @@ json_data = ""
 file_urls = []
 ################################# AWS ###################################################
 load_dotenv()
-json_manifest_data = {
+
+
+
+# Bucket="ep011-808429836131-eu-north-1-staging-bucket",
+# Key="rnd/staging_raw/mqtt/2026-05-07 13:31:02.699288",
+
+def create_local_file():
+    logging.info(
+            {
+                "Message": "Creating local files",
+            }
+        )
+    try:
+        file = open("./dags/load.txt", "x")
+        
+    except Exception as e:
+        logging.error(
+            {
+                "Message": f"error : {e}",
+            }
+        )
+    try:
+        file = open("./dags/transform.json", "x")
+        
+    except Exception as e:
+        logging.error(
+            {
+                "Message": f"error : {e}",
+            }
+        )
+    try:
+        file = open("./dags/manifest.json", "x")
+        
+    except Exception as e:
+        logging.error(
+            {
+                "Message": f"error : {e}",
+            }
+        )
+    
+def create_csv_manifest_file():
+    json_manifest_data = {
     "fileLocations": [{"URIs": []}],
     "globalUploadSettings": {
         "format": "JSON",
         "delimiter": ",",
-        # "textqualifier": '"',
-        "containsHeader": "true",
-    },
-}
-try:
-    file = open("./dags/load.txt", "x")
-    file = open("./dags/transform.json", "x")
-    file = open("./dags/manifest.json", "x")
-    with open("./dags/manifest.json", "w") as file:
-        file.write(json_manifest_data)
-except Exception as e:
-    logging.error(
-        {
-            "Message": f"error : {e}",
+        "textqualifier": "\"",
+        "containsHeader": "true"
         }
-    )
-
-# AWS Credentials -->
-ACCESS_KEY = os.getenv("ACCESS_KEY")
-SECRETE_ACCESS_KEY = os.getenv("SECRETE_ACCESS_KEY")
-REGION = "eu-west-1"
-# Bucket="ep011-808429836131-eu-north-1-staging-bucket",
-# Key="rnd/staging_raw/mqtt/2026-05-07 13:31:02.699288",
-
+    }
+    
+    headers = ["Record_Id","Device_Id","Data_Length","AC_Input_0","AC_Input_1","AC_Input_2","T1","T2","T3","T4","T5","T6","T7", 
+             "PCB_NTC", 
+             "Flow_1", 
+             "Flow_2", 
+             "Output_Flag_1", 
+             "Output_Flag_2", 
+             "Output_Flag_3", 
+             "Fan_Tach", 
+             "Stepper_Position", 
+             "Flow_Rate", 
+             "Time_stamp"
+            ]
+    with open("./dags/processed_data.csv", "w") as outfile:
+        writer = csv.writer(outfile)
+        writer.writerow(headers)
+    with open("./dags/manifest.json", "w") as file:
+        file.write(json.dumps(json_manifest_data))
 
 def __key__() -> datetime:
     time = datetime.now(timezone.utc)
@@ -123,7 +162,7 @@ def read_data_s3(bucket: str, key: str):
             }
         )
 
-
+    
 def transfomation_script(bucket: str, key: str):
     try:
         s3_hook = S3Hook(aws_conn_id="aws_con")
@@ -137,14 +176,19 @@ def transfomation_script(bucket: str, key: str):
         lines = file.readlines()
         for line in lines:
             datalist.append(int(line))
-        json_data = t_form.datasource_transformation(datalist)
+        json_data, data_list = t_form.datasource_transformation(datalist)
         logging.info(
             {
-                "Message": f"transform data{json_data} ",
+                "Message": f"transform data{json_data}, writing to csv file ",
             }
         )
-        file = open("./dags/transform.json", "w")
-        file.write(str(json_data))
+        # file = open("./dags/processed_data.csv", "w")
+        # file.write(json.dumps(json_data))
+        with open("./dags/processed_data.csv", 'a', newline='') as outfile:
+            writer = csv.writer(outfile)
+            writer.writerow(data_list)
+            outfile.close()
+        
 
     except Exception as e:
         logging.error(
@@ -165,23 +209,30 @@ def upload_to_s3(bucket: str, key: str):
             }
         )
         s3_hook.load_file(
-            filename="./dags/transform.json",
+            filename="./dags/processed_data.csv",
             key=key,
             bucket_name=bucket,
             replace=True,
         )
 
-        file_urls.append(str(key))
-        with open("./dags/manifest.json", "r") as file:
-            data = json.load(file)
+        logging.info(
+            {
+                "Message": "updating manifest file ",
+            }
+        )
+        
+        manifest = open("./dags/manifest.json", "r")
+        data = json.load(manifest)
+        logging.info(data)
             # file.close()
         filelocation = data["fileLocations"]
         file_urls = filelocation[0]
         file_urls = file_urls["URIs"]
-        file_urls.append(key)
+        file_urls.append("https://s3-eu-west-1.amazonaws.com"+bucket+key+".csv")
         data["fileLocations"][0]["URIs"] = file_urls
-        with open("manifest.json", "w") as file:
-            file.write(json.dumps(data))
+        manifest = open("./dags/manifest.json", "w")
+        manifest.write(json.dumps(data))
+        logging.info(data)
             # file.close()
         # s3.put_object(Body=json.dumps(json_data), Bucket=bucket, Key=key)
     except Exception as e:
@@ -197,7 +248,32 @@ def delete_data():
     # s3.Object("your-bucket", "your-key").delete()
 
 
-starttime = start_time_calculation("2026-05-07 18:26:20")
+starttime = start_time_calculation("2026-05-14 20:31:46")
+create_local_file()
+
+with DAG(
+    dag_id="create_local_csv_file",
+    description="create_local_csv_file",
+    start_date=__key__(),
+    schedule="@once",
+    # schedule_interval=timedelta(seconds=1),
+    catchup=False,
+) as dag:
+    
+    start_task = EmptyOperator(task_id="start")
+    create = PythonOperator(
+        task_id="create_csv",
+        python_callable=create_csv_manifest_file
+    )
+    end_task = EmptyOperator(task_id="end")
+    
+    start_task >> create >> end_task
+    
+    
+    
+    
+    
+    
 # DAG setup
 with DAG(
     dag_id="etl_pipeline_transform_quality_check",
@@ -230,6 +306,24 @@ with DAG(
         },
     )
 
+    
+
+    end_task = EmptyOperator(task_id="end")
+    start_task >> extract >> task_transform >> end_task
+
+
+
+
+with DAG(
+    dag_id="upload_csv",
+    description="Upload csv file to s3",
+    start_date=starttime,
+    schedule=timedelta(hours=2),
+    # schedule_interval=timedelta(seconds=1),
+    catchup=False,
+) as dag:
+    
+    start_task = EmptyOperator(task_id="start")
     upload_data = PythonOperator(
         task_id="upload",
         python_callable=upload_to_s3,
@@ -238,6 +332,6 @@ with DAG(
             "key": f"rnd/processes/json/{__key__()}",
         },
     )
-
     end_task = EmptyOperator(task_id="end")
-    start_task >> extract >> task_transform >> upload_data >> end_task
+    
+    start_task >> upload_data >> end_task
