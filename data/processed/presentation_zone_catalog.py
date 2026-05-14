@@ -100,11 +100,11 @@ table_dataframe = wr.catalog.tables(database=DATABASE_NAME, boto3_session=sessio
 print(table_dataframe["Database"])
 
 
-sql = f"SELECT * FROM json LIMIT 5"
+sql = f"SELECT * FROM json"
 df = wr.athena.read_sql_query(
     sql,
     database=DATABASE_NAME,
     s3_output=f"s3://{BUCKET_NAME}/athena_output/",
     boto3_session=session,
 )
-df.head()
+print(df.head())

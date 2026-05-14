@@ -116,24 +116,25 @@ from botocore.exceptions import ClientError
 from dotenv import load_dotenv
 import os
 import boto3
+import json
 
 # AWS Credentials -->
-ACCESS_KEY = os.getenv("ACCESS_KEY")
-SECRETE_ACCESS_KEY = os.getenv("SECRET_ACCESS_KEY")
-print(ACCESS_KEY)
-REGION = "eu-west-1"
-BUCKET_NAME = "ep011-808429836131-eu-north-1-staging-bucket"
-load_dotenv()
+# ACCESS_KEY = os.getenv("ACCESS_KEY")
+# SECRETE_ACCESS_KEY = os.getenv("SECRET_ACCESS_KEY")
+# print(ACCESS_KEY)
+# REGION = "eu-west-1"
+# BUCKET_NAME = "ep011-808429836131-eu-north-1-staging-bucket"
+# load_dotenv()
 
-# Create AWS session with credentials. using boto3 lib
-session = boto3.Session(
-    aws_access_key_id=ACCESS_KEY,
-    aws_secret_access_key=SECRETE_ACCESS_KEY,
-    region_name=REGION,
-)
+# # Create AWS session with credentials. using boto3 lib
+# session = boto3.Session(
+#     aws_access_key_id=ACCESS_KEY,
+#     aws_secret_access_key=SECRETE_ACCESS_KEY,
+#     region_name=REGION,
+# )
 
-databases = wr.catalog.databases(boto3_session=session)
-print(databases)
+# databases = wr.catalog.databases(boto3_session=session)
+# print(databases)
 
 # DATABASE_NAME = "de-c3w2lab1-aws-reviews"
 
@@ -142,3 +143,32 @@ print(databases)
 #     print(wr.catalog.databases())
 # else:
 #     print(f"Database {DATABASE_NAME} already exists")
+
+json_file = {
+    "fileLocations": [{"URIs": ["uri1", "uri2", "uri3"]}],
+    "globalUploadSettings": {
+        "format": "JSON",
+        "delimiter": ",",
+        "textqualifier": "'",
+        "containsHeader": "true",
+    },
+}
+# file = open("manifest.json", "x")
+with open("manifest.json", "w") as file:
+    file.write(json.dumps(json_file))
+    file.close()
+
+with open("manifest.json", "r") as file:
+    data = json.load(file)
+urls = []
+filelocation = data["fileLocations"]
+urls = filelocation[0]
+urls = urls["URIs"]
+# urls.append(filelocation[0]["URIs"])
+print(urls)
+urls.append("hello")
+data["fileLocations"][0]["URIs"] = urls
+with open("manifest.json", "w") as file:
+    file.write(json.dumps(data))
+    file.close()
+# print()
