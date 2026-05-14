@@ -32,7 +32,7 @@ class transform:
         raw = f"{deviceid}-{timestamp}"
         return hashlib.sha256(raw.encode()).hexdigest()
 
-    def datasource_transformation(self, dataList) -> dict:
+    def datasource_transformation(self, dataList) :
         deviceidAscii = [dataList[val] for val in range(2, len(dataList) - 19)]
         deviceid = "".join(map(chr, deviceidAscii))
         json_data = {}
@@ -62,17 +62,40 @@ class transform:
                 "Stepper_Position": dataList[31],
                 "Flow_Rate": dataList[32],
                 "Time_stamp": f"{timestamp}",
-                "Event_Id": f"{self.generate_event_id(deviceid, timestamp)}",
+                #"Event_Id": f"{self.generate_event_id(deviceid, timestamp)}",
             }
             
-            return json_data
+            data_list = [str(timestamp.microsecond) + deviceid,
+                deviceid,
+                dataList[1],
+                dataList[14],
+                dataList[15],
+                dataList[16],
+                dataList[17],
+                dataList[18],
+                dataList[19],
+                dataList[20],
+                dataList[21],
+                dataList[22],
+                dataList[23],
+                dataList[24],
+                dataList[25],
+                dataList[26],
+                dataList[27],
+                dataList[28],
+                dataList[29],
+                dataList[30],
+                dataList[31],
+                dataList[32],
+                timestamp]
+            return json_data, data_list
         
         except Exception as e:
             logging.error(
                 {
                     "Message": "failed to receive complete dataframe: ",
                     "error": str(e),
-                    "line": format(sys.exc_info()[-1].tb_lineno),
+                    "line": format(sys.exc_info()[-1].tb_lineno), # type: ignore
                 }
             )
 
@@ -80,7 +103,7 @@ class transform:
                 {
                     "Message": "failed to receive complete dataframe: ",
                     "error": str(e),
-                    "line": format(sys.exc_info()[-1].tb_lineno),
+                    "line": format(sys.exc_info()[-1].tb_lineno), # type: ignore
                 }
             )
             return {}

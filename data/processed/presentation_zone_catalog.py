@@ -21,7 +21,7 @@ logging.basicConfig(
 )
 # AWS Credentials -->
 ACCESS_KEY = os.getenv("ACCESS_KEY")
-SECRETE_ACCESS_KEY = os.getenv("SECRET_ACCESS_KEY")
+SECRETE_ACCESS_KEY = os.getenv("SECRETE_ACCESS_KEY")
 REGION = "eu-west-1"
 BUCKET_NAME = "ep011-808429836131-eu-north-1-processed-bucket"
 
@@ -89,22 +89,31 @@ except Exception as e:
         }
     )
 
-response = glue_client.list_crawlers()
-crawler_name = response["CrawlerNames"][0]
-print(crawler_name)
-
-# response = glue_client.start_crawler(Name=crawler_name)
-# print(response)
-
-table_dataframe = wr.catalog.tables(database=DATABASE_NAME, boto3_session=session)
-print(table_dataframe["Database"])
-
-
-sql = f"SELECT * FROM json"
-df = wr.athena.read_sql_query(
-    sql,
-    database=DATABASE_NAME,
-    s3_output=f"s3://{BUCKET_NAME}/athena_output/",
-    boto3_session=session,
-)
-print(df.head())
+try:
+    
+    response = glue_client.list_crawlers()
+    crawler_name = response["CrawlerNames"][0]
+    print(crawler_name)
+except Exception as e:
+    print(e)
+try:
+    response = glue_client.start_crawler(Name=crawler_name)
+    print(response)
+except Exception as e:
+    print(e)
+try:
+    table_dataframe = wr.catalog.tables(database=DATABASE_NAME, boto3_session=session)
+    print(table_dataframe["Database"])
+except Exception as e:
+    print(e)
+try:
+    sql = "SELECT * FROM json limit 10"
+    df = wr.athena.read_sql_query(
+        sql,
+        database=DATABASE_NAME,
+        s3_output=f"s3://{BUCKET_NAME}/athena_output/",
+        boto3_session=session,
+    )
+except Exception as e:
+    print(e)
+# print(df.head())
