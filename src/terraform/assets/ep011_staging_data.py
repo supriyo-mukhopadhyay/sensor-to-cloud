@@ -6,7 +6,7 @@ import pandas as pd
 import pandas as pd
 import boto3
 import time
-import datetime
+from datetime import datetime, timezone
 from botocore.exceptions import ClientError
 from dotenv import load_dotenv
 import os
@@ -254,7 +254,7 @@ def on_message(client, userdata, message, properties=None):
     global sec_counter
     sec_counter = sec_counter + 1
     payload = message.payload
-    time = datetime.datetime.now()
+    time = datetime.now(timezone.utc)
     time = time.strftime("%Y-%m-%d %H:%M:%S")
     key = f"rnd/staging_raw/mqtt/{time}"
     _payloadHexArray_ = []
@@ -265,7 +265,7 @@ def on_message(client, userdata, message, properties=None):
     with open("myfile.txt", "w") as f:
         # f.write(str(datalist))
         f.write("\n".join(str(data) for data in datalist))
-    if sec_counter == 2:
+    if sec_counter == 10:
         s3Client.put_object(
             Body=open("./myfile.txt", "rb"), Bucket=BUCKET_NAME, Key=key
         )

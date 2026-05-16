@@ -1,5 +1,5 @@
 import logging
-import datetime
+from datetime import datetime, timezone
 import hashlib
 import sys
 
@@ -36,7 +36,7 @@ class transform:
         deviceidAscii = [dataList[val] for val in range(2, len(dataList) - 19)]
         deviceid = "".join(map(chr, deviceidAscii))
         json_data = {}
-        timestamp = datetime.datetime.now()
+        timestamp = datetime.now(timezone.utc)
         try:
             json_data = {
                 "Record_Id": f"{str(timestamp.microsecond) + deviceid}",
@@ -61,7 +61,7 @@ class transform:
                 "Fan_Tach": dataList[30],
                 "Stepper_Position": dataList[31],
                 "Flow_Rate": dataList[32],
-                "Time_stamp": f"{timestamp}",
+                "Time_stamp": f"{timestamp}"
                 #"Event_Id": f"{self.generate_event_id(deviceid, timestamp)}",
             }
             

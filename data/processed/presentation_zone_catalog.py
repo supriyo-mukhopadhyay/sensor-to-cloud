@@ -77,7 +77,7 @@ try:
         Targets={
             "S3Targets": [
                 {
-                    "Path": f"s3://{BUCKET_NAME}/rnd/processes/json/",
+                    "Path": f"s3://{BUCKET_NAME}/rnd/processes/csv/",
                 },
             ]
         },
